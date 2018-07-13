@@ -9,7 +9,7 @@ run <- function (x, ...) {
 #' @import assertthat
 command_seq <- function(...) {
   dots <- list(...)
-  assert_that(all(map(dots, ~ inherits(., "command"))))
+  assert_that(all(map_lgl(dots, ~ inherits(., "command"))))
   
   structure(list(cmds=dots),
             class=c("command_seq", "command"))
@@ -23,10 +23,10 @@ run.command_seq <- function(x, ...) {
 
 #' @export
 run.command <- function(x, ...) {
-  processx::run(x$program, x$argcmd, ...)
+  processx::run(x$program, unlist(x$opts), ...)
 }
 
-gen_command <- function(program, ..., input=NULL, switchchar="-") {
+command <- function(program, ..., input=NULL, switchchar="-") {
   dots <- list(...)
   ndots <- names(dots)
  
@@ -42,6 +42,7 @@ gen_command <- function(program, ..., input=NULL, switchchar="-") {
     }
   })
    
+  opts <- argcmd
   argcmd <- stringr::str_trim(paste(argcmd, collapse=" "))
   #argcmd <- map2(names(opts), opts, ~ paste(paste0(switchchar, .x), paste(.y, collapse=" "))) %>% paste(collapse=" ")
   
@@ -51,7 +52,7 @@ gen_command <- function(program, ..., input=NULL, switchchar="-") {
   
   ret <- list(
     program=program,
-    opts=dots,
+    opts=opts,
     argcmd=stringr::str_trim(argcmd)
   )
   
